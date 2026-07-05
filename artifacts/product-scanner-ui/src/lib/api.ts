@@ -151,8 +151,8 @@ export async function recognizeBarcode(barcode: string) {
   return fetchApi<ProductInfo>("/api/recognize-barcode", { method: "POST", body: JSON.stringify({ barcode }) });
 }
 
-export async function recognizeImage(image_base64: string) {
-  return fetchApi<ProductInfo>("/api/recognize-image", { method: "POST", body: JSON.stringify({ image_base64 }) });
+export async function recognizeImage(image_base64: string, for_barcode = false) {
+  return fetchApi<ProductInfo>("/api/recognize-image", { method: "POST", body: JSON.stringify({ image_base64, for_barcode }) });
 }
 
 export async function getPrices(query: string) {

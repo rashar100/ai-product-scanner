@@ -1,0 +1,147 @@
+<div class="max-w-md mx-auto bg-[#1a1a2e] text-white p-6 rounded-2xl shadow-xl">
+    <h2 class="text-2xl font-bold text-center mb-2">Identify & Compare</h2>
+    <p class="text-center text-gray-400 mb-6">Scan any product by photo, barcode, or text</p>
+
+    <!-- التبويبات -->
+    <div class="flex bg-[#16213e] rounded-xl p-1 mb-6">
+        <button onclick="switchTab(0)" class="tab-btn flex-1 py-2 rounded-lg font-medium active" id="tab-0">
+            Text
+        </button>
+        <button onclick="switchTab(1)" class="tab-btn flex-1 py-2 rounded-lg font-medium" id="tab-1">
+            Barcode
+        </button>
+        <button onclick="switchTab(2)" class="tab-btn flex-1 py-2 rounded-lg font-medium" id="tab-2">
+            Photo
+        </button>
+    </div>
+
+    <!-- محتوى التبويبات -->
+    
+    <!-- Text Tab -->
+    <div id="content-0" class="tab-content">
+        <textarea id="text-input" 
+                  class="w-full bg-[#16213e] border border-gray-600 rounded-xl p-4 h-32 resize-none focus:outline-none focus:border-[#00f5ff]"
+                  placeholder="Describe the product..."></textarea>
+        
+        <button onclick="searchByText()" 
+                class="w-full mt-4 bg-[#00f5ff] hover:bg-[#00d4e0] transition-colors text-black font-semibold py-3 rounded-xl">
+            Search
+        </button>
+    </div>
+
+    <!-- Barcode Tab -->
+    <div id="content-1" class="tab-content hidden">
+        <div class="space-y-3">
+            <!-- زر الكاميرا -->
+            <button onclick="scanBarcodeWithCamera()" 
+                    class="w-full flex items-center justify-center gap-2 bg-[#16213e] hover:bg-[#1f2a4a] border border-gray-600 py-3 rounded-xl transition-colors">
+                <span>📷</span>
+                <span>Scan with Camera</span>
+            </button>
+
+            <!-- زر استيراد صورة -->
+            <button onclick="importBarcodeImage()" 
+                    class="w-full flex items-center justify-center gap-2 bg-[#16213e] hover:bg-[#1f2a4a] border border-gray-600 py-3 rounded-xl transition-colors">
+                <span>🖼️</span>
+                <span>Import from Gallery</span>
+            </button>
+        </div>
+        
+        <input type="file" id="barcode-file" accept="image/*" class="hidden" onchange="handleBarcodeImage(event)">
+    </div>
+
+    <!-- Photo Tab -->
+    <div id="content-2" class="tab-content hidden">
+        <div class="space-y-3">
+            <!-- زر الكاميرا -->
+            <button onclick="takePhoto()" 
+                    class="w-full flex items-center justify-center gap-2 bg-[#16213e] hover:bg-[#1f2a4a] border border-gray-600 py-3 rounded-xl transition-colors">
+                <span>📷</span>
+                <span>Take Photo</span>
+            </button>
+
+            <!-- زر استيراد صورة -->
+            <button onclick="importPhoto()" 
+                    class="w-full flex items-center justify-center gap-2 bg-[#16213e] hover:bg-[#1f2a4a] border border-gray-600 py-3 rounded-xl transition-colors">
+                <span>🖼️</span>
+                <span>Import from Gallery</span>
+            </button>
+        </div>
+        
+        <input type="file" id="photo-file" accept="image/*" class="hidden" onchange="handlePhotoImage(event)">
+    </div>
+</div>
+
+<script>
+// تبديل التبويبات
+function switchTab(tabIndex) {
+    // إخفاء كل المحتويات
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    
+    // إزالة الـ active من كل الأزرار
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active', 'bg-[#00f5ff]', 'text-black'));
+    
+    // إظهار المحتوى المطلوب
+    document.getElementById(`content-${tabIndex}`).classList.remove('hidden');
+    
+    // تفعيل الزر
+    const activeBtn = document.getElementById(`tab-${tabIndex}`);
+    activeBtn.classList.add('active', 'bg-[#00f5ff]', 'text-black');
+}
+
+// البحث بالنص (Text Tab)
+function searchByText() {
+    const text = document.getElementById('text-input').value.trim();
+    if (!text) {
+        alert("Please enter a product description");
+        return;
+    }
+    // هنا ترسل الطلب للـ API
+    console.log("Searching by text:", text);
+    // مثال: sendToAPI('/api/recognize-text', { query: text });
+}
+
+// تصوير الباركود
+function scanBarcodeWithCamera() {
+    alert("Camera scanning will be implemented here (use getUserMedia)");
+    // يمكن استخدام navigator.mediaDevices.getUserMedia
+}
+
+// استيراد صورة باركود
+function importBarcodeImage() {
+    document.getElementById('barcode-file').click();
+}
+
+function handleBarcodeImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+        console.log("Barcode image selected:", file.name);
+        // أرسل الصورة للـ API
+        // sendImageToAPI('/api/recognize-barcode', file);
+    }
+}
+
+// تصوير صورة عادية
+function takePhoto() {
+    alert("Camera will open here");
+}
+
+// استيراد صورة عادية
+function importPhoto() {
+    document.getElementById('photo-file').click();
+}
+
+function handlePhotoImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+        console.log("Photo selected:", file.name);
+        // sendImageToAPI('/api/recognize-image', file);
+    }
+}
+
+// تشغيل التبويب الأول افتراضياً
+window.onload = () => {
+    document.getElementById('content-0').classList.remove('hidden');
+    document.getElementById('tab-0').classList.add('active', 'bg-[#00f5ff]', 'text-black');
+}
+</script>
