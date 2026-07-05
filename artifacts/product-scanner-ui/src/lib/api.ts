@@ -131,6 +131,17 @@ export async function getMe(): Promise<User> {
   return res.data;
 }
 
+export interface QuotaInfo {
+  remaining: number;
+  daily_limit: number;
+  reset_at: string;
+}
+
+export async function getQuota(): Promise<QuotaInfo> {
+  const res = await fetchApi<QuotaInfo>("/api/quota");
+  return res.data;
+}
+
 // Product endpoints
 export async function recognizeText(query: string) {
   return fetchApi<ProductInfo>("/api/recognize-text", { method: "POST", body: JSON.stringify({ query }) });

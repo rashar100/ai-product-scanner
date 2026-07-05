@@ -18,7 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .config import get_settings
-from .database import Base, engine
+from .database import Base, engine, run_migrations
 from .logging_config import configure_logging
 from .middleware import SecurityHeadersMiddleware
 from .routers import auth, products
@@ -29,6 +29,8 @@ logger = logging.getLogger(__name__)
 
 # إنشاء الجداول (للتطبيقات الأكبر استخدم Alembic للهجرات)
 Base.metadata.create_all(bind=engine)
+# ترقيات آمنة للأعمدة الجديدة على قواعد البيانات الموجودة
+run_migrations()
 
 app = FastAPI(
     title=settings.APP_NAME,

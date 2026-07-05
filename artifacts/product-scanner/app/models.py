@@ -6,9 +6,9 @@ app/models.py
 """
 
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
@@ -35,6 +35,12 @@ class User(Base):
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_now, nullable=False
+    )
+    daily_searches_remaining: Mapped[int] = mapped_column(
+        Integer, default=5, nullable=False
+    )
+    last_quota_reset: Mapped[date] = mapped_column(
+        Date, default=date.today, nullable=False
     )
 
     refresh_tokens: Mapped[list["RefreshToken"]] = relationship(

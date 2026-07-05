@@ -14,11 +14,15 @@ from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response
 from ..claude_client import US_STORE_DOMAINS, ask_claude
 from ..prompts import HISTORY_SYSTEM, PRICE_SYSTEM, PRODUCT_SYSTEM
 from ..config import get_settings
-from ..database import SessionLocal
+from ..database import SessionLocal, get_db
+from ..dependencies import get_current_user
 from ..models import User
+from ..quota import DAILY_QUOTA, check_user_quota
 from ..rate_limit import rate_limit
 from ..schemas import BarcodeBody, ImageBody, PriceBody, TextBody
 from ..security import ACCESS_TOKEN_TYPE, TokenError, decode_token
+from sqlalchemy.orm import Session
+from datetime import date
 
 settings = get_settings()
 router = APIRouter(prefix="/api", tags=["products"])
@@ -71,7 +75,7 @@ async def apply_quotas(
         )
 
 
-QUOTAS = [Depends(apply_quotas)]
+QUOTAS = [Depends(apply_quotas), Depends(check_user_quota)]
 
 
 # ── المسارات (منطق الإصدار 2 كما هو) ──────────────────────────────
@@ -129,6 +133,24 @@ def price_history(body: PriceBody):
                 "text": f"ابحث عن تاريخ سعر هذا المنتج في آخر ٦ أشهر وأعِد JSON: {body.query}"}]
     return ask_claude(content, HISTORY_SYSTEM, body.lang, settings.MODEL_PRICES,
                       use_search=True, max_tokens=1500, max_uses=4)
+
+
+@router.get("/quota")
+def get_quota(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """يرجع عدد عمليات البحث المتبقية لليوم للمستخدم الحالي."""
+    today = date.today()
+    if current_user.last_quota_reset < today:
+        current_user.daily_searches_remaining = DAILY_QUOTA
+        current_user.last_quota_reset = today
+        db.commit()
+    return {
+        "remaining": current_user.daily_searches_remaining,
+        "daily_limit": DAILY_QUOTA,
+        "reset_at": "midnight UTC",
+    }
 
 
 @router.get("/healthz")

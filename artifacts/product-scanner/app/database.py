@@ -36,6 +36,34 @@ class Base(DeclarativeBase):
     pass
 
 
+def run_migrations() -> None:
+    """
+    ترقيات بسيطة للمخطط: تضيف الأعمدة الجديدة إن لم تكن موجودة.
+    آمنة تماماً على قواعد البيانات الموجودة (لا تحذف بيانات).
+    """
+    from sqlalchemy import inspect, text
+
+    with engine.connect() as conn:
+        inspector = inspect(engine)
+        existing = {c["name"] for c in inspector.get_columns("users")}
+        if "daily_searches_remaining" not in existing:
+            conn.execute(
+                text(
+                    "ALTER TABLE users ADD COLUMN"
+                    " daily_searches_remaining INTEGER NOT NULL DEFAULT 5"
+                )
+            )
+            conn.commit()
+        if "last_quota_reset" not in existing:
+            conn.execute(
+                text(
+                    "ALTER TABLE users ADD COLUMN"
+                    " last_quota_reset DATE NOT NULL DEFAULT (date('now'))"
+                )
+            )
+            conn.commit()
+
+
 def get_db() -> Generator[Session, None, None]:
     """اعتمادية (dependency) تُعطي جلسة قاعدة بيانات وتغلقها تلقائياً."""
     db = SessionLocal()

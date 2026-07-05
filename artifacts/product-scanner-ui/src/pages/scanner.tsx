@@ -1,23 +1,39 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useProduct } from "@/hooks/use-product";
-import { recognizeText, recognizeBarcode, recognizeImage } from "@/lib/api";
+import { recognizeText, recognizeBarcode, recognizeImage, getQuota, type QuotaInfo } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Search, Barcode, Camera, Loader2, Activity, Tag, Sparkles } from "lucide-react";
+import { Search, Barcode, Camera, Loader2, Activity, Tag, Sparkles, Zap } from "lucide-react";
 
 export default function ScannerPage() {
   const { product, setProduct, setQuotaRemaining, clear } = useProduct();
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
-  
+  const { user } = useAuth();
+
   const [isLoading, setIsLoading] = useState(false);
   const [query, setQuery] = useState("");
   const [barcode, setBarcode] = useState("");
+  const [quota, setQuota] = useState<QuotaInfo | null>(null);
+
+  const refreshQuota = async () => {
+    if (!user) return;
+    try {
+      setQuota(await getQuota());
+    } catch {
+      // نتجاهل الخطأ هنا — الحصة اختيارية في العرض
+    }
+  };
+
+  useEffect(() => {
+    refreshQuota();
+  }, [user]);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -36,7 +52,8 @@ export default function ScannerPage() {
       }
       
       setQuotaRemaining(res.quotaRemaining);
-      
+      await refreshQuota();
+
       if (res.data.found) {
         setProduct(res.data);
       } else {
@@ -92,6 +109,26 @@ export default function ScannerPage() {
 
       <Card className="w-full shadow-2xl border-primary/20 bg-card/50 backdrop-blur-xl">
         <CardContent className="p-6">
+          {user && quota !== null && (
+            <div className="flex items-center justify-between mb-5 px-1">
+              <span className="text-xs text-muted-foreground font-medium">Daily searches</span>
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  {Array.from({ length: quota.daily_limit }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`h-2 w-5 rounded-full transition-colors ${
+                        i < quota.remaining ? "bg-primary" : "bg-secondary"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className={`text-xs font-mono font-semibold tabular-nums ${quota.remaining === 0 ? "text-destructive" : "text-primary"}`}>
+                  {quota.remaining}/{quota.daily_limit}
+                </span>
+              </div>
+            </div>
+          )}
           <Tabs defaultValue="text" className="w-full">
             <TabsList className="grid w-full grid-cols-3 mb-6 bg-secondary/50">
               <TabsTrigger value="text" data-testid="tab-text">Text</TabsTrigger>
