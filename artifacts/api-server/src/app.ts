@@ -25,7 +25,18 @@ app.use(
     },
   }),
 );
-app.use(cors());
+// Reflect exact Origin back with credentials: true.
+// This is required because the frontend uses fetch({ credentials: "include" }),
+// and browsers reject credentialed requests when the response has
+// Access-Control-Allow-Origin: * (wildcard).
+app.use(
+  cors({
+    origin: true,        // mirror the request's Origin header
+    credentials: true,   // allow cookies / auth headers
+    allowedHeaders: ["Content-Type", "X-Device-Id", "X-CSRF-Token"],
+    exposedHeaders: ["X-RateLimit-Remaining", "Retry-After"],
+  }),
+);
 
 // Proxy /api/* and /auth/* to Python FastAPI backend on port 8000.
 // Use root-level middleware with pathFilter so Express does NOT strip the
