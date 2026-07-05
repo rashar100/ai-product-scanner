@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Product Scanner"
+version = "1.0.0"
+id = "artifacts/product-scanner-ui"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25414
+
+[services.development]
+run = "pnpm --filter @workspace/product-scanner-ui run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/product-scanner-ui", "run", "build" ]
+publicDir = "artifacts/product-scanner-ui/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25414"
+BASE_PATH = "/"
