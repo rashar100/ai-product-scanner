@@ -38,6 +38,13 @@ app.use(
   }),
 );
 
+// Health check endpoint — responds directly without proxying to Python.
+// This must come before the proxy middleware so the deployment health check
+// never depends on the Python backend being up.
+app.get("/api/healthz", (_req, res) => {
+  res.json({ status: "ok" });
+});
+
 // Proxy /api/* and /auth/* to Python FastAPI backend on port 8000.
 // Use root-level middleware with pathFilter so Express does NOT strip the
 // path prefix — the full path reaches the Python backend intact.
