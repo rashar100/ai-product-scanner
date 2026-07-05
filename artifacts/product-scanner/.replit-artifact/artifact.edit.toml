@@ -1,0 +1,13 @@
+kind = "api"
+previewPath = "/api"
+title = "Product Scanner API"
+version = "1.0.0"
+id = "product-scanner-api"
+
+[[services]]
+localPort = 8000
+name = "Product Scanner API"
+paths = ["/api", "/auth"]
+
+[services.development]
+run = "cd /home/runner/workspace/artifacts/product-scanner && pip install -q -r requirements.txt && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
